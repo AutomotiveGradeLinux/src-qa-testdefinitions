@@ -5,6 +5,7 @@ set -x
 export TERM=dumb
 export COLUMNS=1000
 
+SCRIPTDIR=`dirname $(readlink -f $0)`
 XDG_RUNTIME_DIR=/run/user/1001
 AGLDRIVER=agl-driver
 
@@ -114,30 +115,37 @@ fi
 ls /home/agl-driver/agl-screenshot*
 
 REF_IMAGE_SHA1SUM=`sha1sum ${REF_IMAGE} | awk -F ' ' '{print $1}'`
-IMAGE_SHA1SUM=`sha1sum /home/agl-driver/agl-screenshot-*.png | awk -F ' ' '{print $1}'`
 
-if [ "${REF_IMAGE_SHA1SUM}" == "${IMAGE_SHA1SUM}" ]; then
-	echo "Screenshot matches the reference image"
+FINALRET=1
+
+
+for SCREENSHOT in /home/agl-driver/agl-screenshot-*.png ; do
+    IMAGE_SHA1SUM=`sha1sum $SCREENSHOT | awk -F ' ' '{print $1}'`
+
+    if [ "${REF_IMAGE_SHA1SUM}" == "${IMAGE_SHA1SUM}" ]; then
+	echo "A Screenshot matches the reference image"
 	FINALRET=0
-else
-set -x
-	echo "Screenshot does not match the reference image"
+	break
+    else
+	echo "A Screenshot does not match the reference image"
 	FINALRET=127
-	for i in /home/agl-driver/agl-screenshot-*.png ; do
-		if [ -x ./artiproxy-upload.sh ];then
-			echo "DEBUG: upload screenshot $i"
-			./artiproxy-upload.sh $i $(basename $i)
-		fi
-set +x
-	done
-	echo "#########################"
-	journalctl -t agl-compositor
-	echo "#########################"
-	journalctl -b --no-pager -a
-	echo "#########################"
-	exit 127
-fi
+    fi
 
+done
+
+if [ $FINALRET != 0 ] ; then
+    for i in /home/agl-driver/agl-screenshot-*.png ; do
+	${SCRIPTDIR}/./artiproxy-upload.sh $i "$i"
+    done
+    journalctl -b --no-pager -a > journal.txt
+    ${SCRIPTDIR}/./artiproxy-upload.sh journal.txt journal.txt
+
+    echo "#########################"
+    cat /run/platform/display/*.log
+    echo "#########################"
+    set
+    echo "#########################"
+fi
 
 # cleanup
 sed -i '/activate-by-default=false/d' /etc/xdg/weston/weston.ini
