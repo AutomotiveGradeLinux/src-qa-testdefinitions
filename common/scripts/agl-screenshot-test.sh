@@ -9,13 +9,18 @@ SCRIPTDIR=`dirname $(readlink -f $0)`
 XDG_RUNTIME_DIR=/run/user/1001
 AGLDRIVER=agl-driver
 
-# go to output directory
+if [ -z $1 ] ; then
+    echo "No reference image passed"
+    exit 125
+fi
 
+REF_IMAGE=`readlink -f $1`
+
+# go to output directory
 cd /home/$AGLDRIVER
 
 
 
-REF_IMAGE="$1"
 
 if [ -z "${REF_IMAGE}" ]; then
 	echo "No reference image passed"
