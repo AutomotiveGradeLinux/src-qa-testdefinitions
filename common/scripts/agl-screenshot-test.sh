@@ -9,6 +9,9 @@ SCRIPTDIR=`dirname $(readlink -f $0)`
 XDG_RUNTIME_DIR=/run/user/1001
 AGLDRIVER=agl-driver
 
+# go to output directory
+
+cd /home/$AGLDRIVER
 
 
 
@@ -112,14 +115,14 @@ else
 	exit 127
 fi
 
-ls /home/agl-driver/agl-screenshot*
+ls agl-screenshot*
 
 REF_IMAGE_SHA1SUM=`sha1sum ${REF_IMAGE} | awk -F ' ' '{print $1}'`
 
 FINALRET=1
 
 
-for SCREENSHOT in /home/agl-driver/agl-screenshot-*.png ; do
+for SCREENSHOT in agl-screenshot-*.png ; do
     IMAGE_SHA1SUM=`sha1sum $SCREENSHOT | awk -F ' ' '{print $1}'`
 
     if [ "${REF_IMAGE_SHA1SUM}" == "${IMAGE_SHA1SUM}" ]; then
@@ -134,7 +137,7 @@ for SCREENSHOT in /home/agl-driver/agl-screenshot-*.png ; do
 done
 
 if [ $FINALRET != 0 ] ; then
-    for i in /home/agl-driver/agl-screenshot-*.png ; do
+    for i in agl-screenshot-*.png ; do
 	${SCRIPTDIR}/./artiproxy-upload.sh $i "$i"
     done
     journalctl -b --no-pager -a > journal.txt
