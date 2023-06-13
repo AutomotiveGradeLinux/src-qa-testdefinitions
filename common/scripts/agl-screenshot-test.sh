@@ -40,18 +40,17 @@ sed -i '/^\[core\]/a hide-cursor=true' /etc/xdg/weston/weston.ini
 echo 'HOMESCREEN_DEMO_CI=1' > /etc/default/homescreen
 sync
 systemctl daemon-reload || true
-su - agl-driver -c 'export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1001/bus" ; systemctl --user daemon-reload' || true
 sleep 2
 
 # create initial journal cursor file
 journalctl /usr/bin/agl-compositor --cursor-file=/tmp/agl-screenshot-cursor > /tmp/first-log 2>&1
 
 # stop homescreen (shell) and launcher
-su $AGLDRIVER -c 'XDG_RUNTIME_DIR=/run/user/1001/ DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus systemctl --user stop homescreen'
-su $AGLDRIVER -c 'XDG_RUNTIME_DIR=/run/user/1001/ DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus systemctl --user stop launcher'
+systemctl stop homescreen.service
+systemctl stop launcher.service
 # restart agl-compositor
-su $AGLDRIVER -c 'XDG_RUNTIME_DIR=/run/user/1001/ DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus systemctl --user restart agl-compositor'
-su $AGLDRIVER -c 'XDG_RUNTIME_DIR=/run/user/1001/ DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus systemctl --user start homescreen'
+systemctl restart agl-compositor.service
+systemctl start homescreen.service
 
 # e.g. qemu-system-arm takes loooong
 sleep 10
@@ -93,7 +92,7 @@ AGL_SCREENSHOOTER=/usr/bin/agl-screenshooter
 #su - $AGLDRIVER -c "..."
 do_screenshot()
 {
-	su - $AGLDRIVER -c "XDG_RUNTIME_DIR=/run/user/1001 $AGL_SCREENSHOOTER -a"
+	$AGL_SCREENSHOOTER -a
 	return $?
 }
 
@@ -109,7 +108,7 @@ rm -rf /home/agl-driver/agl-screenshot-*.png
 # give it a bit more time to display
 #sleep 60
 
-su - $AGLDRIVER -c "XDG_RUNTIME_DIR=/run/user/1001 $AGL_SCREENSHOOTER -l"
+$AGL_SCREENSHOOTER -l
 
 if do_screenshot ; then
 	echo "Screenshot taken"
@@ -163,7 +162,9 @@ rm -rf /etc/default/homescreen
 systemctl daemon-reload
 sync
 sleep 2
-systemctl restart agl-session@agl-driver.service
+systemctl restart agl-compositor.service
+systemctl restart homescreen.service
+systemctl restart launcher.service
 
 sleep 10
 
