@@ -32,12 +32,17 @@ if [ ! -f "${REF_IMAGE}" ]; then
 	exit 125
 fi
 
+HOMESCREEN=homescreen
+if [ -f /usr/lib/systemd/system/flutter-ics-homescreen.service ]; then
+    HOMESCREEN=flutter-ics-homescreen
+fi
+
 # Enable the test picture and disable cursor and any other application from being displayed
 sed -i '/^\[core\]/a activate-by-default=false' /etc/xdg/weston/weston.ini
 # setup homescreen env variable
 sed -i '/^\[core\]/a hide-cursor=true' /etc/xdg/weston/weston.ini
 # enable red/green/blue test screen
-echo 'HOMESCREEN_DEMO_CI=1' > /etc/default/homescreen
+echo 'HOMESCREEN_DEMO_CI=1' > /etc/default/$HOMESCREEN
 sync
 systemctl daemon-reload || true
 sleep 2
@@ -46,11 +51,13 @@ sleep 2
 journalctl /usr/bin/agl-compositor --cursor-file=/tmp/agl-screenshot-cursor > /tmp/first-log 2>&1
 
 # stop homescreen (shell) and launcher
-systemctl stop homescreen.service
-systemctl stop launcher.service
+systemctl stop $HOMESCREEN.service
+if [ "$HOMESCREEN" = "homescreen" ]; then
+    systemctl stop launcher.service
+fi
 # restart agl-compositor
 systemctl restart agl-compositor.service
-systemctl start homescreen.service
+systemctl start $HOMESCREEN.service
 
 # e.g. qemu-system-arm takes loooong
 sleep 10
@@ -158,13 +165,15 @@ fi
 sed -i '/activate-by-default=false/d' /etc/xdg/weston/weston.ini
 sed -i '/hide-cursor=true/d' /etc/xdg/weston/weston.ini
 #rm -rf /etc/systemd/system/weston@.service.d
-rm -rf /etc/default/homescreen
+rm -rf /etc/default/$HOMESCREEN
 systemctl daemon-reload
 sync
 sleep 2
 systemctl restart agl-compositor.service
-systemctl restart homescreen.service
-systemctl restart launcher.service
+systemctl restart $HOMESCREEN.service
+if [ "$HOMESCREEN" = "homescreen" ]; then
+    systemctl restart launcher.service
+fi
 
 sleep 10
 
