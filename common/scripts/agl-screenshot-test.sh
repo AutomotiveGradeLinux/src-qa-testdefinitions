@@ -142,10 +142,12 @@ for SCREENSHOT in agl-screenshot-*.png ; do
 	break
     else
 	echo "A Screenshot does not match the reference image"
+	curl -F "file=@./${SCREENSHOT}" https://x0.at/ || true
 	FINALRET=127
     fi
-
 done
+
+
 
 if [ $FINALRET != 0 ] ; then
     for i in agl-screenshot-*.png ; do
