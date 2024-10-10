@@ -60,8 +60,8 @@ systemctl restart agl-compositor.service
 systemctl start $HOMESCREEN.service
 
 # e.g. qemu-system-arm takes loooong
-sleep 10
-echo "Waiting for compositor to initialize (+10sec)."
+sleep 20
+echo "Waiting for compositor to initialize (+20sec)."
 
 LOOP=20
 while test $LOOP -ge 1 ; do
