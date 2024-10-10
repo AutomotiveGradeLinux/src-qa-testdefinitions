@@ -2,6 +2,8 @@
 
 set -x
 
+( echo "nameserver 8.8.8.8" > /etc/resolv.conf ) || true
+
 export TERM=dumb
 export COLUMNS=1000
 
