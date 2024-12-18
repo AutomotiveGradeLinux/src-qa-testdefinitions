@@ -65,7 +65,7 @@ systemctl restart agl-compositor.service
 systemctl start $HOMESCREEN.service
 
 # e.g. qemu-system-arm takes loooong
-sleep 20
+sleep 15
 echo "Waiting for compositor to initialize (+20sec)."
 
 LOOP=20
@@ -118,7 +118,7 @@ fi
 rm -rf /home/agl-driver/agl-screenshot-*.png
 
 # give it a bit more time to display
-#sleep 60
+sleep 15
 
 $AGL_SCREENSHOOTER -l
 
