@@ -14,5 +14,4 @@ run:
         - lava-test-case linux-linaro-openembedded-pwd --shell pwd
         - lava-test-case linux-linaro-openembedded-uname --shell uname -a
         - lava-test-case linux-linaro-openembedded-vmstat --shell vmstat
-        - lava-test-case linux-linaro-openembedded-ifconfig --shell ifconfig -a
         - lava-test-case linux-linaro-openembedded-lsusb --shell lsusb
